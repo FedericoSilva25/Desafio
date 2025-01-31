@@ -19,10 +19,18 @@ export interface WeatherInfo {
     humidity: number;
 }
 
+export type ErrorCode = 
+    | 'WEATHER_AUTH_ERROR'
+    | 'CITY_NOT_FOUND'
+    | 'CONFIG_ERROR'
+    | 'INVALID_INPUT'
+    | 'INVALID_THREAD_ID'
+    | 'WEATHER_SERVICE_ERROR';
+
 export class TravelAssistantError extends Error {
     constructor(
         message: string,
-        public code: string,
+        public code: ErrorCode,
         public statusCode: number = 500
     ) {
         super(message);

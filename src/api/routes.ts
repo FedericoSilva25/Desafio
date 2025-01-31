@@ -1,25 +1,41 @@
-import { Router } from 'express';
+import express from 'express';
+import { ConversationService } from '../services/conversationService';
 import { DestinationExpert } from '../agents/destinationExpert';
 import { LuggageWeatherExpert } from '../agents/luggageWeatherExpert';
-import { ConversationService } from '../services/conversationService';
 import { WeatherService } from '../services/weatherService';
-import { config } from '../config';
 import { ChatOpenAI } from '@langchain/openai';
+import { config } from '../config';
+import { TravelAssistantError } from '../types';
 
-const router = Router();
-
-// Inicializar servicios
+const router = express.Router();
 const model = new ChatOpenAI({ temperature: 0.7 });
 const weatherService = new WeatherService(config.openWeatherApiKey);
 const conversationService = new ConversationService();
 const destinationExpert = new DestinationExpert(model);
-const luggageWeatherExpert = new LuggageWeatherExpert(model, weatherService);
+const luggageExpert = new LuggageWeatherExpert(model, weatherService);
 
 router.post('/chat', async (req, res) => {
     try {
-        const { message, threadId: existingThreadId } = req.body;
-        
-        // Crear o recuperar hilo de conversación
+        const { message, threadId: existingThreadId, context } = req.body;
+
+        // Validación de entrada
+        if (!message || typeof message !== 'string') {
+            throw new TravelAssistantError(
+                'El mensaje es requerido y debe ser texto',
+                'INVALID_INPUT',
+                400
+            );
+        }
+
+        if (existingThreadId && typeof existingThreadId !== 'string') {
+            throw new TravelAssistantError(
+                'El threadId debe ser un string válido',
+                'INVALID_THREAD_ID',
+                400
+            );
+        }
+
+        // Crear o recuperar thread
         const threadId = existingThreadId || conversationService.createThread();
         const thread = conversationService.getThread(threadId);
 
@@ -27,21 +43,23 @@ router.post('/chat', async (req, res) => {
         conversationService.addMessage(threadId, {
             role: 'user',
             content: message,
-            context: req.body.context
+            context
         });
 
-        // Determinar qué agente debe responder
+        // Determinar y ejecutar agente apropiado
         let response: string;
-        if (message.toLowerCase().includes('clima') || message.toLowerCase().includes('equipaje')) {
-            conversationService.switchAgent(threadId, 'luggage_weather');
-            const destination = thread.messages[0]?.context?.destination || 'destino no especificado';
-            response = await luggageWeatherExpert.getWeatherAndPackingList(destination, 7);
+        if (context?.destination && !context?.duration) {
+            response = await destinationExpert.getDestinationInfo(context.destination);
+            thread.currentAgent = 'destination';
+        } else if (context?.destination && context?.duration) {
+            response = await luggageExpert.getWeatherAndPackingList(context.destination, context.duration);
+            thread.currentAgent = 'luggage_weather';
         } else {
-            conversationService.switchAgent(threadId, 'destination');
-            response = await destinationExpert.getDestinationInfo(message);
+            response = await destinationExpert.suggestDestinations(message);
+            thread.currentAgent = 'destination';
         }
 
-        // Agregar respuesta del asistente
+        // Agregar respuesta del bot
         conversationService.addMessage(threadId, {
             role: 'assistant',
             content: response
@@ -52,11 +70,21 @@ router.post('/chat', async (req, res) => {
             response,
             currentAgent: thread.currentAgent
         });
-
     } catch (error) {
-        console.error('Error en el endpoint de chat:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        console.error('Error en el chat:', error);
+        if (error instanceof TravelAssistantError) {
+            res.status(error.statusCode).json({
+                error: 'Error procesando la solicitud',
+                message: error.message,
+                code: error.code
+            });
+        } else {
+            res.status(500).json({
+                error: 'Error interno del servidor',
+                message: error instanceof Error ? error.message : 'Error desconocido'
+            });
+        }
     }
 });
 
-export { router };
+export default router;

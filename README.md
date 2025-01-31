@@ -50,9 +50,14 @@ Para ejecutar las pruebas del proyecto:
 bash
 npm test
 
-5. API Endpoints 📡
+5. Ejemplos de Uso 🎯
+
+Ver examples.md para ejemplos detallados de uso de la API.
+
+6. API Endpoints 📡
 POST /api/chat
 Este es el endpoint principal para interactuar con el asistente.
+
 
 Request Body
 json
@@ -81,13 +86,14 @@ threadId: Identificador del hilo de conversación.
 response: La respuesta generada por el bot, según el mensaje del usuario.
 currentAgent: El agente que está manejando la conversación actual (por ejemplo, destination).
 
-6. Estructura del Proyecto 📁
+7. Estructura del Proyecto 📁
 
 src/
 ├── agents/               # Agentes especializados
 │   ├── destinationExpert.ts
 │   └── luggageWeatherExpert.ts
 ├── api/                  # Rutas y controladores
+
 │   └── routes.ts
 ├── services/             # Servicios
 │   ├── conversationService.ts
@@ -101,7 +107,7 @@ src/
 ├── config.ts             # Configuración
 └── app.ts                # Punto de entrada
 
-7. Decisiones Técnicas 🔧
+8. Decisiones Técnicas 🔧
 
 A. Arquitectura Multi-agente
 Separación clara de responsabilidades.
@@ -126,7 +132,6 @@ Mocks para servicios externos.
 
 8. Escalabilidad Futura 📈
 El proyecto está diseñado para crecer con:
-
 
 A. Nuevas Integraciones
 
