@@ -109,49 +109,81 @@ src/
 
 8. Decisiones Técnicas 🔧
 
-A. Arquitectura Multi-agente
-Separación clara de responsabilidades.
-Facilita la adición de nuevos agentes.
-Mejor mantenibilidad del código.
+Desafíos y Soluciones Técnicas 🛠️
+A. Integración con LangChain
 
-B. Manejo de Estado
-Sistema de hilos de conversación.
-Persistencia de contexto entre mensajes.
+Uno de los principales desafíos fue la implementación correcta del RunnableSequence de LangChain:
 
-Cambio fluido entre agentes.
-C. Seguridad y Validación
-Validación de variables de entorno.
-Manejo de errores tipado.
-Respuestas HTTP apropiadas.
+Desafío: Los tipos y la documentación de LangChain eran limitados para mi caso de uso.
+Solución: Implementé una estructura personalizada de transformadores que permite un flujo de datos más predecible y tipado.
+
+B. Manejo de Contexto en Conversaciones
+
+Desafío: Mantener el contexto entre diferentes mensajes y agentes sin perder información crucial.
+
+Solución: Desarrollé un sistema de hilos (Thread) con un servicio dedicado (ConversationService) que mantiene el estado y permite cambios fluidos entre agentes.
+
+C. Integración con OpenWeather API
+
+Desafío: Manejar diferentes tipos de errores y respuestas de la API externa.
+Solución: Implementé un sistema de errores tipados (TravelAssistantError) que traduce los errores externos a mensajes significativos para el usuario.
+
+D. Testing de Componentes con IA
+
+Desafío: Crear tests significativos para componentes que dependen de IA.
+Solución: Desarrollé un sistema de mocks que simula respuestas de IA manteniendo la coherencia en las pruebas.
+
+E. Arquitectura Multi-agente
+
+Desafío: Coordinar múltiples agentes especializados manteniendo el código mantenible.
+Solución: Implementé una arquitectura modular donde cada agente tiene responsabilidades claramente definidas y una interfaz consistente.
+
+
+Decisiones de Diseño Clave
+
+A. Tipado Estricto
+
+Uso extensivo de TypeScript para prevenir errores en tiempo de compilación.
+
+Uso extensivo de TypeScript para prevenir errores en tiempo de compilación.
+Interfaces y tipos personalizados para todas las estructuras de datos.
+
+B. Manejo de Errores
+
+Sistema centralizado de errores con códigos específicos.
+Transformación de errores técnicos en mensajes amigables para el usuario.
+
+C. Estructura Modular
+
+Separación clara de responsabilidades entre agentes.
+Servicios independientes para funcionalidades específicas.
+Fácil extensibilidad para nuevas características.
 
 D. Testing
-Pruebas unitarias para componentes individuales.
 
-Pruebas de integración para flujos completos.
-Mocks para servicios externos.
+Tests unitarios para componentes individuales.
+Tests de integración para flujos completos.
+Mocks personalizados para servicios externos.
 
-8. Escalabilidad Futura 📈
-El proyecto está diseñado para crecer con:
+Mejoras Futuras Consideradas
 
-A. Nuevas Integraciones
+A. Optimización de Rendimiento
 
-APIs de vuelos.
-Servicios de reserva de hoteles.
-Recomendaciones de restaurantes.
+Implementación de caché para respuestas comunes.
+Sistema de rate limiting para APIs externas.
 
-B. Mejoras Técnicas
+B. Escalabilidad
 
-Sistema de caché.
-Base de datos para persistencia.
-Logging avanzado.
+Preparación para microservicios.
+Sistema de colas para procesamiento asíncrono.
 
-C. Experiencia de Usuario
+C. Monitoreo
 
-Interfaz web.
-Aplicación móvil.
-Soporte multiidioma.
+Sistema de logging más detallado.
+Métricas de rendimiento y uso.
 
-9. Contribuir 🤝
+D. Contribuir 🤝
+
 Si deseas contribuir a este proyecto:
 
 Haz un fork del repositorio.
@@ -160,11 +192,13 @@ Realiza tus cambios y haz commit (git commit -m 'Add amazing feature').
 Empuja tus cambios (git push origin feature/amazing-feature).
 Abre un Pull Request.
 
-10. Licencia 📄
+9. Licencia 📄
 MIT
 
-11. Autor ✒️
+10. Autor ✒️
 [David Federico Silva]
 
----
+-----------------------------------------------------------------------------
+
+
 ⌨️ con ❤️ por [David Federico Silva]
